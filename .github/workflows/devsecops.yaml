@@ -34,13 +34,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install --prefer-binary -r requirements.txt
 
-      # SAST: Semgrep
       - name: Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
           generateSarif: "true"
 
-      # SAST: SonarQube
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4
         env:
@@ -50,7 +48,6 @@ jobs:
             -Dsonar.projectKey=mehatecodethings_dvpwa
             -Dsonar.organization=mehatecodethings
 
-      # SCA: Snyk
       - name: Snyk Security Scan
         uses: snyk/actions/python@master
         env:
@@ -58,16 +55,12 @@ jobs:
         with:
           args: --severity-threshold=high
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
       - name: Grant permissions to workspace
         run: chmod -R 777 ${{ github.workspace }}
 
       - name: Test Database Connection
         run: |
           nc -zv localhost 5432 || echo "Postgres not reachable on localhost"
-          nc -zv postgres 5432 || echo "Postgres not reachable on hostname 'postgres'"
       
       - name: Start Application
         env:
@@ -75,13 +68,11 @@ jobs:
         run: |
           python run.py &
           for i in {1..30}; do
-            # Updated port to 8080
-            curl -s http://localhost:8080 > /dev/null && break  
+            curl -s http://localhost:8080 > /dev/null && break
             echo "Waiting for app to start..."
             sleep 2
           done
 
-      # DAST: OWASP ZAP
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
