@@ -62,18 +62,28 @@ jobs:
         run: |
           nc -zv localhost 5432 || echo "Postgres not reachable on localhost"
       
+      - name: Debug Port Binding
+        run: netstat -tuln | grep 8080 || echo "Port 8080 is not bound."
+
+      - name: Test Redis Connection
+        run: nc -zv localhost 6379 || echo "Redis not reachable on localhost"
 
       - name: Start Application
         env:
           DB_HOST: localhost
         run: |
           python run.py &
-          # Use 127.0.0.1 and a longer sleep to allow binding
           for i in {1..30}; do
-            curl -s http://127.0.0.1:8080 > /dev/null && break
-            echo "Waiting for app to start..."
+            echo "Attempt $i: Checking app availability..."
+            if curl -v http://127.0.0.1:8080; then
+              echo "App is up!" && break
+            else
+              echo "Curl failed, retrying..."
+            fi
             sleep 5
           done
+          # If it fails, check if the process is still running
+          ps aux | grep python || echo "Application process has crashed!"
 
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
