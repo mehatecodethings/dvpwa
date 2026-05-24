@@ -16,7 +16,6 @@ jobs:
           POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
-        # ADD health check so postgres is truly ready before app starts
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -26,7 +25,6 @@ jobs:
         image: redis:latest
         ports:
           - 6379:6379
-        # ADD health check so redis is truly ready before app starts
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -41,6 +39,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq redis-tools postgresql-client
 
       - name: Install dependencies
         run: |
@@ -71,6 +74,30 @@ jobs:
       - name: Grant permissions to workspace
         run: chmod -R 777 ${{ github.workspace }}
 
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in {1..20}; do
+            if pg_isready -h 127.0.0.1 -p 5432 -U user; then
+              echo "PostgreSQL is ready!"
+              break
+            fi
+            echo "Attempt $i: PostgreSQL not ready yet..."
+            sleep 3
+          done
+
+      - name: Wait for Redis
+        run: |
+          echo "Waiting for Redis to be ready..."
+          for i in {1..20}; do
+            if redis-cli -h 127.0.0.1 -p 6379 ping | grep -q PONG; then
+              echo "Redis is ready!"
+              break
+            fi
+            echo "Attempt $i: Redis not ready yet..."
+            sleep 3
+          done
+
       - name: Start Application
         env:
           DB_HOST: 127.0.0.1
@@ -80,11 +107,16 @@ jobs:
           APP_PID=$!
           echo "App PID: $APP_PID"
 
-          echo "Waiting for app to be ready..."
+          echo "Waiting for app HTTP server to be ready..."
           APP_READY=false
           for i in {1..30}; do
             sleep 5
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080 || true)
+            # --connect-timeout 3: give TCP 3s to connect
+            # --max-time 5: total request timeout 5s
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              --connect-timeout 3 \
+              --max-time 5 \
+              http://127.0.0.1:8080 || true)
             echo "Attempt $i: HTTP status = $HTTP_CODE"
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ] || [ "$HTTP_CODE" = "301" ]; then
               echo "App is up and responding!"
@@ -96,7 +128,6 @@ jobs:
             fi
           done
 
-          # If app never came up, print full logs and fail clearly
           if [ "$APP_READY" = "false" ]; then
             echo "ERROR: App failed to start after 150 seconds. Full logs:"
             cat app_logs.txt
@@ -107,8 +138,6 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'http://localhost:8080'
-          # IMPORTANT: Do not fail the pipeline just because ZAP found vulnerabilities
-          # (dvpwa is intentionally vulnerable — exit code 3 = alerts found, which is expected)
           fail_action: false
           allow_issue_alerts: true
         env:
