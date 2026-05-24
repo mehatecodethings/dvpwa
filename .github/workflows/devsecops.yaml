@@ -45,6 +45,8 @@ jobs:
         with:
           args: --severity-threshold=high
 
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
       - name: Grant permissions to workspace
         run: chmod -R 777 ${{ github.workspace }}
