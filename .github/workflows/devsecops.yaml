@@ -66,8 +66,10 @@ jobs:
           nc -zv postgres 5432 || echo "Postgres not reachable on hostname 'postgres'"
       
       - name: Start Application
+        env:
+          DB_HOST: localhost 
         run: |
-          python run.py &
+          python run.py & 
           for i in {1..30}; do
             curl -s http://localhost:5000 > /dev/null && break
             echo "Waiting for app to start..."
