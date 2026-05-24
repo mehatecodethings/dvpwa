@@ -45,15 +45,13 @@ jobs:
         with:
           args: --severity-threshold=high
 
-      - name: List files (Troubleshooting)
-        run: ls -R
 
       - name: Grant permissions to workspace
         run: chmod -R 777 ${{ github.workspace }}
 
       - name: Start Application
         run: |
-          python app.py &
+          python run &
           for i in {1..30}; do
             curl -s http://localhost:5000 > /dev/null && break
             echo "Waiting for app to start..."
