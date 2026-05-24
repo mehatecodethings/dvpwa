@@ -71,18 +71,21 @@ jobs:
       - name: Start Application
         env:
           DB_HOST: localhost
+          REDIS_HOST: localhost
         run: |
-          # Start the app and pipe logs to a file so we can read them if it crashes
+          # Start the app and pipe logs to a file to capture initialization errors
           python run.py > app_logs.txt 2>&1 &
           
           # Wait loop
           for i in {1..30}; do
             sleep 5
+            # Check if the port is active and responding
             if curl -s -f http://127.0.0.1:8080 > /dev/null; then
               echo "App is up!" && break
             else
-              echo "Attempt $i: App not ready yet. Checking logs..."
-              head -n 20 app_logs.txt # Print recent logs to see errors
+              echo "Attempt $i: App not ready yet. Checking recent logs for errors..."
+              # Display the last 10 lines of logs to identify crashes or connection issues
+              tail -n 10 app_logs.txt
             fi
           done
 
