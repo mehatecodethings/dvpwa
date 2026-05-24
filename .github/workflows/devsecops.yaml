@@ -56,3 +56,5 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'http://localhost:5000'
+        env:
+          docker_run_options: "-u root"
