@@ -60,6 +60,11 @@ jobs:
       - name: Grant permissions to workspace
         run: chmod -R 777 ${{ github.workspace }}
 
+      - name: Test Database Connection
+        run: |
+          nc -zv localhost 5432 || echo "Postgres not reachable on localhost"
+          nc -zv postgres 5432 || echo "Postgres not reachable on hostname 'postgres'"
+      
       - name: Start Application
         run: |
           python run.py &
