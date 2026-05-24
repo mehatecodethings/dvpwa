@@ -45,6 +45,11 @@ jobs:
         with:
           args: --severity-threshold=high
 
+      - name: List files (Troubleshooting)
+        run: ls -R
+
+      - name: Grant permissions to workspace
+        run: chmod -R 777 ${{ github.workspace }}
 
       - name: Start Application
         run: |
