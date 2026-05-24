@@ -33,6 +33,10 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           #SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=YOUR_PROJECT_KEY_FROM_SONARQUBE
+            -Dsonar.organization=YOUR_ORGANIZATION_KEY_FROM_SONARQUBE
 
       # SCA: Snyk
       - name: Snyk Security Scan
