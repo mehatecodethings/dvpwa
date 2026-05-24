@@ -57,21 +57,12 @@ jobs:
 
       - name: Grant permissions to workspace
         run: chmod -R 777 ${{ github.workspace }}
-
-      - name: Test Database Connection
-        run: |
-          nc -zv localhost 5432 || echo "Postgres not reachable on localhost"
       
-      - name: Debug Port Binding
-        run: netstat -tuln | grep 8080 || echo "Port 8080 is not bound."
-
-      - name: Test Redis Connection
-        run: nc -zv localhost 6379 || echo "Redis not reachable on localhost"
-
       - name: Start Application
+        # Pointing hostnames directly to the service names 'postgres' and 'redis'
         env:
-          DB_HOST: localhost
-          REDIS_HOST: localhost
+          DB_HOST: postgres
+          REDIS_HOST: redis
         run: |
           # Start the app and pipe logs to a file to capture initialization errors
           python run.py > app_logs.txt 2>&1 &
@@ -79,12 +70,11 @@ jobs:
           # Wait loop
           for i in {1..30}; do
             sleep 5
-            # Check if the port is active and responding
+            # Use 127.0.0.1 for the health check itself
             if curl -s -f http://127.0.0.1:8080 > /dev/null; then
               echo "App is up!" && break
             else
               echo "Attempt $i: App not ready yet. Checking recent logs for errors..."
-              # Display the last 10 lines of logs to identify crashes or connection issues
               tail -n 10 app_logs.txt
             fi
           done
@@ -95,5 +85,3 @@ jobs:
           target: 'http://localhost:8080'
         env:
           DOCKER_RUN_OPTIONS: "-u root -v ${{ github.workspace }}:/zap/wrk/:rw --network=host"
-
-#githubtweaking
