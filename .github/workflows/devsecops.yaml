@@ -61,4 +61,4 @@ jobs:
         with:
           target: 'http://localhost:5000'
         env:
-          docker_run_options: "-u root"
+          DOCKER_RUN_OPTIONS: "-u root -v ${{ github.workspace }}:/zap/wrk/:rw --network=host"
