@@ -71,11 +71,12 @@ jobs:
       
       - name: Start Application
         env:
-          DB_HOST: localhost 
+          DB_HOST: localhost
         run: |
-          python run.py & 
+          python run.py &
           for i in {1..30}; do
-            curl -s http://localhost:5000 > /dev/null && break
+            # Updated port to 8080
+            curl -s http://localhost:8080 > /dev/null && break  
             echo "Waiting for app to start..."
             sleep 2
           done
