@@ -16,6 +16,10 @@ jobs:
           POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -80,6 +84,6 @@ jobs:
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          target: 'http://localhost:5000'
+          target: 'http://localhost:8080'
         env:
           DOCKER_RUN_OPTIONS: "-u root -v ${{ github.workspace }}:/zap/wrk/:rw --network=host"
