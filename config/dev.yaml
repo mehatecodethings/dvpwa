@@ -9,5 +9,5 @@ redis:
   port: 6379
   db: 0
 app:
-  host: 127.0.0.1
+  host: 0.0.0.0      # ← CHANGED from 127.0.0.1
   port: 8080

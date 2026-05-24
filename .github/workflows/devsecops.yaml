@@ -103,6 +103,11 @@ jobs:
           DB_HOST: 127.0.0.1
           REDIS_HOST: 127.0.0.1
         run: |
+          # Bind app to 0.0.0.0 so ZAP Docker container can reach it via --network=host
+          sed -i '/^app:/,/^[^ ]/ s/host: 127.0.0.1/host: 0.0.0.0/' config/dev.yaml
+          echo "Config after patch:"
+          cat config/dev.yaml
+
           python run.py > app_logs.txt 2>&1 &
           APP_PID=$!
           echo "App PID: $APP_PID"
