@@ -72,18 +72,19 @@ jobs:
         env:
           DB_HOST: localhost
         run: |
-          python run.py &
+          # Start the app and pipe logs to a file so we can read them if it crashes
+          python run.py > app_logs.txt 2>&1 &
+          
+          # Wait loop
           for i in {1..30}; do
-            echo "Attempt $i: Checking app availability..."
-            if curl -v http://127.0.0.1:8080; then
+            sleep 5
+            if curl -s -f http://127.0.0.1:8080 > /dev/null; then
               echo "App is up!" && break
             else
-              echo "Curl failed, retrying..."
+              echo "Attempt $i: App not ready yet. Checking logs..."
+              head -n 20 app_logs.txt # Print recent logs to see errors
             fi
-            sleep 5
           done
-          # If it fails, check if the process is still running
-          ps aux | grep python || echo "Application process has crashed!"
 
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
