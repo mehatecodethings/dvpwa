@@ -1,12 +1,12 @@
 db:
   user: user
   password: password
-  host: postgres
+  host: 127.0.0.1
   port: 5432
   database: dvpwa
 
 redis:
-  host: redis
+  host: 127.0.0.1
   port: 6379
   db: 0
 
