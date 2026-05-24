@@ -35,8 +35,8 @@ jobs:
           #SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=YOUR_PROJECT_KEY_FROM_SONARQUBE
-            -Dsonar.organization=YOUR_ORGANIZATION_KEY_FROM_SONARQUBE
+            -Dsonar.projectKey=mehatecodethings_dvpwa
+            -Dsonar.organization=mehatecodethings
 
       # SCA: Snyk
       - name: Snyk Security Scan
