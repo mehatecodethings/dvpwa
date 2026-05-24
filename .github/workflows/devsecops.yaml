@@ -22,7 +22,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       redis:
-        image: redis:latest
+        image: redis:6
         ports:
           - 6379:6379
         options: >-
@@ -76,25 +76,25 @@ jobs:
 
       - name: Wait for PostgreSQL
         run: |
-          echo "Waiting for PostgreSQL to be ready..."
+          echo "Waiting for PostgreSQL..."
           for i in {1..20}; do
             if pg_isready -h 127.0.0.1 -p 5432 -U user; then
               echo "PostgreSQL is ready!"
               break
             fi
-            echo "Attempt $i: PostgreSQL not ready yet..."
+            echo "Attempt $i: not ready yet..."
             sleep 3
           done
 
       - name: Wait for Redis
         run: |
-          echo "Waiting for Redis to be ready..."
+          echo "Waiting for Redis..."
           for i in {1..20}; do
             if redis-cli -h 127.0.0.1 -p 6379 ping | grep -q PONG; then
               echo "Redis is ready!"
               break
             fi
-            echo "Attempt $i: Redis not ready yet..."
+            echo "Attempt $i: not ready yet..."
             sleep 3
           done
 
@@ -111,25 +111,22 @@ jobs:
           APP_READY=false
           for i in {1..30}; do
             sleep 5
-            # --connect-timeout 3: give TCP 3s to connect
-            # --max-time 5: total request timeout 5s
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
               --connect-timeout 3 \
               --max-time 5 \
               http://127.0.0.1:8080 || true)
             echo "Attempt $i: HTTP status = $HTTP_CODE"
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ] || [ "$HTTP_CODE" = "301" ]; then
-              echo "App is up and responding!"
+              echo "App is up!"
               APP_READY=true
               break
             else
-              echo "App not ready yet. Recent logs:"
               tail -n 5 app_logs.txt
             fi
           done
 
           if [ "$APP_READY" = "false" ]; then
-            echo "ERROR: App failed to start after 150 seconds. Full logs:"
+            echo "Full app logs:"
             cat app_logs.txt
             exit 1
           fi
