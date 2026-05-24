@@ -45,6 +45,12 @@ jobs:
         with:
           args: --severity-threshold=high
 
+
+      - name: Start Application
+        run: |
+          python app.py & 
+          sleep 10
+
       # DAST: OWASP ZAP
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
