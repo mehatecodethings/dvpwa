@@ -62,15 +62,17 @@ jobs:
         run: |
           nc -zv localhost 5432 || echo "Postgres not reachable on localhost"
       
+
       - name: Start Application
         env:
           DB_HOST: localhost
         run: |
           python run.py &
+          # Use 127.0.0.1 and a longer sleep to allow binding
           for i in {1..30}; do
-            curl -s http://localhost:8080 > /dev/null && break
+            curl -s http://127.0.0.1:8080 > /dev/null && break
             echo "Waiting for app to start..."
-            sleep 2
+            sleep 5
           done
 
       - name: OWASP ZAP Baseline Scan
