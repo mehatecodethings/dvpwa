@@ -151,5 +151,6 @@ jobs:
           target: 'http://localhost:8080'
           fail_action: false
           allow_issue_writing: false
+          artifact_name: 'zap-scan-report'
         env:
           DOCKER_RUN_OPTIONS: "-u root -v ${{ github.workspace }}:/zap/wrk/:rw --network=host"
