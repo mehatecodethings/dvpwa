@@ -86,6 +86,16 @@ jobs:
             sleep 3
           done
 
+      - name: Run Database Migrations
+        run: |
+          export PGPASSWORD=password
+          echo "Running migrations..."
+          for f in $(ls migrations/*.sql | sort); do
+            echo "Applying $f..."
+            psql -h 127.0.0.1 -p 5432 -U user -d dvpwa -f "$f"
+          done
+          echo "All migrations applied!"
+
       - name: Wait for Redis
         run: |
           echo "Waiting for Redis..."
