@@ -11,12 +11,8 @@ log = logging.getLogger(__name__)
 
 @web.middleware
 async def session_middleware(request, handler):
-    """Wrapper to Session Middleware factory.
-    """
-    # Do the trick, by passing app & handler back to original session
-    # middleware factory. Do not forget to await on results here as original
-    # session middleware factory is also awaitable.
     app = request.app
+    # aiohttp-session 2.12 + aioredis 2.x: pass Redis client directly
     storage = RedisStorage(app['redis'], httponly=False)
     middleware = session_middleware_(storage)
     return await middleware(request, handler)
@@ -54,21 +50,16 @@ def error_pages(overrides):
                 raise
             else:
                 return await override(request, ex)
-
     return middleware
 
 
 async def handle_40x(request, exc):
-    response = render_template('errors/40x.jinja2',
-                               request,
-                               {'error': exc})
+    response = render_template('errors/40x.jinja2', request, {'error': exc})
     return response
 
 
 async def handle_50x(request, exc):
-    response = render_template('errors/50x.jinja2',
-                               request,
-                               {'error': exc})
+    response = render_template('errors/50x.jinja2', request, {'error': exc})
     return response
 
 
