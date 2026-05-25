@@ -10,9 +10,9 @@ hiredis==2.3.2
 idna==3.7
 jinja2==3.1.4
 markupsafe==2.1.5
-multidict==6.0.5
+multidict>=6.0.5
 psycopg2-binary>=2.9
 PyYAML>=6.0
 trafaret-config==2.0.2
 trafaret==2.1.1
-yarl==1.9.4
+yarl>=1.17.0
